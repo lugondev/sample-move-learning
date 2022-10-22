@@ -1,0 +1,9 @@
+[package]
+name = "LugonSample5"
+version = "0.0.1"
+
+[addresses]
+LugonSample = "_"
+
+[dependencies]
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework/", rev = "main" }
