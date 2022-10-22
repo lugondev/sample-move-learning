@@ -1,11 +1,6 @@
-// @ts-ignore
-import dotenv from "dotenv";
-import { AptosAccount, AptosClient, HexString, FaucetClient, TokenClient, CoinClient } from "aptos";
-dotenv.config({ path: ".env" });
+import { AptosAccount, AptosClient, CoinClient, FaucetClient, HexString, TokenClient } from "aptos";
+import { DEV_PRIVATE_KEY, FAUCET_URL, NODE_URL } from "./common"
 
-const NODE_URL = process.env.APTOS_NODE_URL || "https://fullnode.testnet.aptoslabs.com";
-const FAUCET_URL = process.env.APTOS_FAUCET_URL || "https://faucet.testnet.aptoslabs.com";
-const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const WALLETS = [
     "0xbf2705b6262428525219c0144a2b6329fe6c06ff8a7586bd07ee90c844bd35ff",
     "0x4b22142d0aaa4fa23aa9d7872558224ec060cea839089437a285c21318b269e6",
@@ -22,9 +17,9 @@ const faucetClient = new FaucetClient(NODE_URL, FAUCET_URL);
 const tokenClient = new TokenClient(client);
 const coinClient = new CoinClient(client);
 
-const dev = new AptosAccount(PRIVATE_KEY ? (new HexString(PRIVATE_KEY)).toUint8Array() : undefined);
+const dev = new AptosAccount(DEV_PRIVATE_KEY ? (new HexString(DEV_PRIVATE_KEY)).toUint8Array() : undefined);
 const devAddr = dev.address().hex();
-const marketAddr = `${devAddr}::marketplace_6`
+const marketAddr = `${devAddr}::marketplace01`
 const seller = new AptosAccount((new HexString(SELLER_PRIVATE_KEY)).toUint8Array());
 const buyer = new AptosAccount(BUYER_PRIVATE_KEY ? (new HexString(BUYER_PRIVATE_KEY)).toUint8Array() : undefined);
 
@@ -88,7 +83,7 @@ const createCollection = async () => {
     txhHash = await tokenClient.createCollection(
         dev,
         collectionName,
-        "Ahihi do ngok",
+        "Description sample",
         "https://zenno.moe",
     );
     await client.waitForTransaction(txhHash, { checkSuccess: true });
@@ -126,52 +121,52 @@ const createToken = async () => {
 }
 
 const initializeMarket = async () => {
-    console.log("=== Creating Marketplace ===");
+    console.log("=== Creating marketplace ===");
     await transactionWrapper(dev, {
         function: `${marketAddr}::initialize_market`,
         type_arguments: [],
-        arguments: [devAddr, devAddr, 10, false]
+        arguments: [ devAddr, devAddr, 10, false ]
     })
     await transactionWrapper(dev, {
         function: `${marketAddr}::add_coin_type_to_whitelist`,
-        type_arguments: ['0x1::aptos_coin::AptosCoin'],
+        type_arguments: [ '0x1::aptos_coin::AptosCoin' ],
         arguments: []
     })
 }
 
 const listToken = async () => {
-    console.log("=== List Token Marketplace ===");
+    console.log("=== List Token marketplace ===");
     await transactionWrapper(seller, {
         function: `${marketAddr}::create_sale`,
-        type_arguments: ['0x1::aptos_coin::AptosCoin'],
-        arguments: [devAddr, collectionName, tokenName, tokenPropertyVersion, 1, Math.ceil(Math.random() * 10), 0]
+        type_arguments: [ '0x1::aptos_coin::AptosCoin' ],
+        arguments: [ devAddr, collectionName, tokenName, tokenPropertyVersion, 1, Math.ceil(Math.random() * 10), 0 ]
     })
 }
 
 const delistToken = async () => {
-    console.log("=== Delist Token Marketplace ===");
+    console.log("=== Delist Token marketplace ===");
     await transactionWrapper(seller, {
         function: `${marketAddr}::cancel_sale`,
-        type_arguments: ['0x1::aptos_coin::AptosCoin'],
-        arguments: [devAddr, collectionName, tokenName, tokenPropertyVersion]
+        type_arguments: [ '0x1::aptos_coin::AptosCoin' ],
+        arguments: [ devAddr, collectionName, tokenName, tokenPropertyVersion ]
     })
 }
 
 const updatePrice = async () => {
-    console.log("=== Update Price Marketplace ===");
+    console.log("=== Update Price marketplace ===");
     await transactionWrapper(seller, {
         function: `${marketAddr}::edit_price`,
-        type_arguments: ['0x1::aptos_coin::AptosCoin'],
-        arguments: [devAddr, collectionName, tokenName, tokenPropertyVersion, 2]
+        type_arguments: [ '0x1::aptos_coin::AptosCoin' ],
+        arguments: [ devAddr, collectionName, tokenName, tokenPropertyVersion, 2 ]
     })
 }
 
 const buyToken = async () => {
-    console.log("=== Buy Token Marketplace ===");
+    console.log("=== Buy Token marketplace ===");
     await transactionWrapper(buyer, {
         function: `${marketAddr}::make_order`,
-        type_arguments: ['0x1::aptos_coin::AptosCoin'],
-        arguments: [seller.address().hex(), devAddr, collectionName, tokenName, tokenPropertyVersion, 1]
+        type_arguments: [ '0x1::aptos_coin::AptosCoin' ],
+        arguments: [ seller.address().hex(), devAddr, collectionName, tokenName, tokenPropertyVersion, 1 ]
     })
 }
 

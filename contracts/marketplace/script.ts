@@ -1,12 +1,8 @@
-// @ts-ignore
-import dotenv from "dotenv";
-import { AptosAccount, AptosClient, HexString, FaucetClient, TokenClient, CoinClient } from "aptos";
-dotenv.config({ path: ".env" });
+import { AptosAccount, AptosClient, HexString, TokenClient } from "aptos";
+import { DEV_PRIVATE_KEY, NODE_URL, PRIVATE_KEY_ALICE, PRIVATE_KEY_BOB } from "./common"
 
-const NODE_URL = process.env.APTOS_NODE_URL || "https://fullnode.testnet.aptoslabs.com";
-const DEV_PRIVATE_KEY = process.env.DEV_PRIVATE_KEY;
-const SELLER_PRIVATE_KEY = process.env.SELLER_PRIVATE_KEY;
-const BUYER_PRIVATE_KEY = process.env.BUYER_PRIVATE_KEY;
+const SELLER_PRIVATE_KEY = PRIVATE_KEY_ALICE;
+const BUYER_PRIVATE_KEY = PRIVATE_KEY_BOB;
 
 const client = new AptosClient(NODE_URL);
 const tokenClient = new TokenClient(client);
@@ -16,7 +12,7 @@ const seller = new AptosAccount(SELLER_PRIVATE_KEY ? (new HexString(SELLER_PRIVA
 const buyer = new AptosAccount(BUYER_PRIVATE_KEY ? (new HexString(BUYER_PRIVATE_KEY)).toUint8Array() : undefined);
 
 const devAddr = dev.address().hex();
-const marketAddr = `${devAddr}::marketplace_6`; // market contract deployed at this address
+const marketAddr = `${devAddr}::marketplace01`; // market contract deployed at this address
 const randomNumber = Math.ceil(Math.random() * 200); // for test
 
 const collectionName = "Aptos Shogun";
@@ -109,7 +105,7 @@ const createToken = async () => {
 }
 
 const initializeMarket = async () => {
-    console.log("=== Creating Marketplace ===");
+    console.log("=== Creating marketplace ===");
     await transactionWrapper(dev, // call from dev account
         {
             function: `${marketAddr}::initialize_market`,
@@ -124,17 +120,17 @@ const initializeMarket = async () => {
     // must call this function to add AptosCoin to whitelist
     await transactionWrapper(dev, {
         function: `${marketAddr}::add_coin_type_to_whitelist`,
-        type_arguments: ['0x1::aptos_coin::AptosCoin'],
+        type_arguments: [ '0x1::aptos_coin::AptosCoin' ],
         arguments: []
     })
 }
 
 const listToken = async () => {
-    console.log("=== List Token Marketplace ===");
+    console.log("=== List Token marketplace ===");
     await transactionWrapper(seller, // call from user
         {
             function: `${marketAddr}::create_sale`,
-            type_arguments: ['0x1::aptos_coin::AptosCoin'], // coin type to sell
+            type_arguments: [ '0x1::aptos_coin::AptosCoin' ], // coin type to sell
             arguments: [
                 devAddr, // creators_address: address,
                 collectionName, // collection: String,
@@ -148,10 +144,10 @@ const listToken = async () => {
 }
 
 const delistToken = async () => {
-    console.log("=== Delist Token Marketplace ===");
+    console.log("=== Delist Token marketplace ===");
     await transactionWrapper(seller, {
         function: `${marketAddr}::cancel_sale`,
-        type_arguments: ['0x1::aptos_coin::AptosCoin'],
+        type_arguments: [ '0x1::aptos_coin::AptosCoin' ],
         arguments: [
             devAddr, // creators_address: address,
             collectionName,  // collection: String,
@@ -162,10 +158,10 @@ const delistToken = async () => {
 }
 
 const updatePrice = async () => {
-    console.log("=== Update Price Marketplace ===");
+    console.log("=== Update Price marketplace ===");
     await transactionWrapper(seller, {
         function: `${marketAddr}::edit_price`,
-        type_arguments: ['0x1::aptos_coin::AptosCoin'],
+        type_arguments: [ '0x1::aptos_coin::AptosCoin' ],
         arguments: [
             devAddr,  // creators_address: address,
             collectionName,  // collection: String,
@@ -177,10 +173,10 @@ const updatePrice = async () => {
 }
 
 const buyToken = async () => {
-    console.log("=== Buy Token Marketplace ===");
+    console.log("=== Buy Token marketplace ===");
     await transactionWrapper(buyer, {
         function: `${marketAddr}::make_order`,
-        type_arguments: ['0x1::aptos_coin::AptosCoin'],
+        type_arguments: [ '0x1::aptos_coin::AptosCoin' ],
         arguments: [
             seller.address().hex(),  // token_seller: address,
             devAddr,  // creators_address: address,

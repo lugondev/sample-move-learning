@@ -1,10 +1,8 @@
-//:!:>moon
-module LugonSample::learning05 {
+module LugonSample::learning07 {
     use std::error;
     use std::signer;
+    use std::vector;
 
-    use aptos_std::table::{Self, Table};
-    use aptos_std::type_info;
     use aptos_framework::account;
     use aptos_framework::event::{Self, EventHandle};
     use aptos_framework::timestamp;
@@ -34,7 +32,7 @@ module LugonSample::learning05 {
 
     struct UsersStorage has key {
         // key is the address for public storage.
-        stores: Table<address, vector<PublicStorage>>,
+        stores: vector<PublicStorage>,
     }
 
     struct StoreEvent has drop, store {
@@ -43,28 +41,7 @@ module LugonSample::learning05 {
         timestamp: u64
     }
 
-    /// Capability required to mint coins.
-    struct MintCapability<phantom CoinType> has copy, store {}
-
-    /// Capability required to freeze a coin store.
-    struct FreezeCapability<phantom CoinType> has copy, store {}
-
-    /// Capability required to burn coins.
-    struct BurnCapability<phantom CoinType> has copy, store {}
-
-    public fun coin_address<CoinType>(): address {
-        let type_info = type_info::type_of<CoinType>();
-        type_info::account_address(&type_info)
-    }
-
     fun init_module(sender: &signer) {
-        aptos_framework::managed_coin::initialize<SampleConfig>(
-            sender,
-            b"Sample01 Coin",
-            b"S01C",
-            8,
-            false,
-        );
         move_to(sender, SampleConfig {
             admin_address: signer::address_of(sender),
         });
@@ -108,7 +85,7 @@ module LugonSample::learning05 {
         let addr = signer::address_of(user);
         if (!exists<UsersStorage>(addr)) {
             let storage = UsersStorage {
-                stores: table::new<address, PublicStorage>()
+                stores: vector::empty<PublicStorage>(),
             };
             move_to(user, storage);
         };
@@ -123,33 +100,36 @@ module LugonSample::learning05 {
     public entry fun user_store(user: &signer, x: u64) acquires PublicStorage, UsersStorage, LugonSample {
         initialize_user_storage(user);
         let userAddress = signer::address_of(user);
-        let newStorage = &mut PublicStorage {
-            num: x,
-            updated_at: timestamp::now_microseconds(),
-        };
 
         let userLatest = borrow_global_mut<PublicStorage>(userAddress);
-        userLatest.num = newStorage.num;
-        userLatest.updated_at = newStorage.updated_at;
+        userLatest.num = x;
+        userLatest.updated_at = timestamp::now_microseconds();
 
         let userStorage = &mut borrow_global_mut<UsersStorage>(userAddress).stores;
-        if (!table::contains(userStorage, userAddress)) {
-            table::add(userStorage, userAddress, *newStorage)
-        }else {
-            let oldStorage = table::borrow_mut(userStorage, userAddress);
-            oldStorage.num = newStorage.num;
-            oldStorage.updated_at = newStorage.updated_at;
-        };
+        vector::push_back(userStorage, *userLatest);
 
         let sample = borrow_global_mut<LugonSample>(@LugonSample);
         event::emit_event<StoreEvent>(
             &mut sample.store_event,
             StoreEvent {
                 user: signer::address_of(user),
-                num: newStorage.num,
-                timestamp: newStorage.updated_at,
+                num: userLatest.num,
+                timestamp: userLatest.updated_at,
             },
         );
     }
+
+    #[test(account = @0xC0FFEE, aptos_framework = @aptos_framework)]
+    fun test_user_store(
+        account: &signer,
+        aptos_framework: &signer
+    ) acquires PublicStorage, UsersStorage, LugonSample, SampleConfig, PrivateStorage {
+        timestamp::set_time_has_started_for_testing(aptos_framework);
+        timestamp::update_global_time_for_test(10000000);
+        account::create_account_for_test(signer::address_of(account));
+
+        init_module(account);
+        admin_store(account, timestamp::now_seconds());
+        user_store(account, timestamp::now_seconds());
+    }
 }
-//<:!:moon

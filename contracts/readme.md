@@ -1,20 +1,27 @@
 # Steps
 ## At move directory
-aptos init
+```shell
 
+# get faucet devnet
 aptos account fund-with-faucet --account default
+aptos account fund-with-faucet --account bob
 
-aptos move compile --named-addresses ZenCoin=default
+# compile move
+aptos move compile --named-addresses LugonSample=default
 
-aptos move publish --named-addresses ZenCoin=default
+# publish move
+aptos move publish --named-addresses LugonSample=default
+```
 
 ## At typescript directory
+```shell
+# install dependencies
 yarn
 
-yarn install
+#Update PRIVATE_KEY in .env
 
-Update PRIVATE_KEY in .env
+# run
+yarn sample_coin
 
-yarn run zen_coin
-
-yarn run zen_nft
+yarn sample_nft
+```

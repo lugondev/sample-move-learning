@@ -1,16 +1,13 @@
-import dotenv from "dotenv";
 import { AptosAccount, AptosClient, HexString, Types, TokenTypes } from "aptos";
-dotenv.config({ path: ".env" });
+import { DEV_PRIVATE_KEY, NODE_URL } from "./common"
 
-const NODE_URL = process.env.APTOS_NODE_URL || "https://fullnode.testnet.aptoslabs.com";
-const DEV_PRIVATE_KEY = process.env.DEV_PRIVATE_KEY;
 
 const client = new AptosClient(NODE_URL);
 
-// dev: owner of the market and collection  
+// dev: owner of the market and collection
 const dev = new AptosAccount(DEV_PRIVATE_KEY ? (new HexString(DEV_PRIVATE_KEY)).toUint8Array() : undefined);
 const devAddr = dev.address().hex();
-const marketAddr = `${devAddr}::marketplace_6`; // market contract deployed at this address
+const marketAddr = `${devAddr}::marketplace01`; // market contract deployed at this address
 
 export const transactionWrapper = async (sender: AptosAccount, payload: Types.EntryFunctionPayload) => {
     const rawTxn = await client.generateTransaction(sender.address(), payload);

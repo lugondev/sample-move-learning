@@ -1,13 +1,5 @@
-// Copyright (c) Aptos
-// SPDX-License-Identifier: Apache-2.0
-
-/* eslint-disable no-console */
-
-import dotenv from "dotenv";
 import { AptosAccount, AptosClient, CoinClient, FaucetClient, HexString, TokenClient } from "aptos";
 import { FAUCET_URL, NODE_URL, PRIVATE_KEY_ALICE } from "./common";
-
-dotenv.config();
 
 (async () => {
     // Create API and faucet clients.

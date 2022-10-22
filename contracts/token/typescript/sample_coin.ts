@@ -13,7 +13,7 @@ class CoinClient extends AptosClient {
     async registerCoin(coinTypeAddress: HexString, coinReceiver: AptosAccount): Promise<string> {
         const rawTxn = await this.generateTransaction(coinReceiver.address(), {
             function: "0x1::managed_coin::register",
-            type_arguments: [ `${coinTypeAddress.hex()}::lugon_coin::A1Coin` ],
+            type_arguments: [ `${coinTypeAddress.hex()}::LugonToken01::LUS` ],
             arguments: [],
         });
 
@@ -27,7 +27,7 @@ class CoinClient extends AptosClient {
     async mintCoin(minter: AptosAccount, receiverAddress: HexString, amount: number | bigint): Promise<string> {
         const rawTxn = await this.generateTransaction(minter.address(), {
             function: "0x1::managed_coin::mint",
-            type_arguments: [ `${minter.address()}::lugon_coin::A1Coin` ],
+            type_arguments: [ `${minter.address()}::LugonToken01::LUS` ],
             arguments: [ receiverAddress.hex(), amount ],
         });
 
@@ -85,15 +85,12 @@ async function main() {
         txnHash = await client.registerCoin(alice.address(), bob);
         await client.waitForTransaction(txnHash, { checkSuccess: true });
     }
-    // const faucetClient = new FaucetClient(NODE_URL, FAUCET_URL);
-    // await faucetClient.fundAccount(alice.address(), 100_000_000);
-    // await faucetClient.fundAccount(bob.address(), 100_000_000);
-    console.log(`Bob's initial ZenCoin balance: ${await client.getBalance(bob.address(), alice.address())}.`);
+    console.log(`Bob's initial Coin balance: ${await client.getBalance(bob.address(), alice.address())}.`);
 
     console.log("Alice mints Bob some of the new coin.");
     txnHash = await client.mintCoin(alice, bob.address(), 10 * 10 ** 8);
     await client.waitForTransaction(txnHash, { checkSuccess: true });
-    console.log(`Bob's updated ZenCoin balance: ${await client.getBalance(bob.address(), alice.address())}.`);
+    console.log(`Bob's updated Coin balance: ${await client.getBalance(bob.address(), alice.address())}.`);
 }
 
 if (require.main === module) {

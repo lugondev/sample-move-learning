@@ -1,4 +1,4 @@
-module MarketAddress::marketplace_6 {
+module MarketAddress::marketplace01 {
     use std::signer;
     use std::string::String;
     use std::error;
@@ -13,7 +13,7 @@ module MarketAddress::marketplace_6 {
     // Errors.
     //
 
-    
+
     /// Not admin of market
     const ENOT_ADMIN: u64 = 1;
 
@@ -109,15 +109,15 @@ module MarketAddress::marketplace_6 {
         token_seller: address,
         amount: u64,
         new_price_per_token: u64,
-        coin_type_info: TypeInfo, 
+        coin_type_info: TypeInfo,
         timestamp: u64
     }
 
     public entry fun initialize_market (
-        sender: &signer, 
+        sender: &signer,
         admin_address: address,
         fee_recipient: address,
-        fee_percentage: u64, 
+        fee_percentage: u64,
         handle_royalty: bool
     ) {
         assert!(signer::address_of(sender) == @MarketAddress, ENOT_ADMIN);
@@ -150,7 +150,7 @@ module MarketAddress::marketplace_6 {
     }
 
     public entry fun set_admin_address (
-        sender: &signer, 
+        sender: &signer,
         admin_address: address,
     ) acquires Market {
         let market = borrow_global_mut<Market>(@MarketAddress);
@@ -159,7 +159,7 @@ module MarketAddress::marketplace_6 {
     }
 
     public entry fun set_fee_recipient (
-        sender: &signer, 
+        sender: &signer,
         fee_recipient: address,
     ) acquires Market {
         let market = borrow_global_mut<Market>(@MarketAddress);
@@ -168,7 +168,7 @@ module MarketAddress::marketplace_6 {
     }
 
     public entry fun set_fee_percentage (
-        sender: &signer, 
+        sender: &signer,
         fee_percentage: u64,
     ) acquires Market {
         let market = borrow_global_mut<Market>(@MarketAddress);
@@ -177,7 +177,7 @@ module MarketAddress::marketplace_6 {
     }
 
     public entry fun set_handle_royalty (
-        sender: &signer, 
+        sender: &signer,
         handle_royalty: bool,
     ) acquires Market {
         let market = borrow_global_mut<Market>(@MarketAddress);
@@ -210,7 +210,7 @@ module MarketAddress::marketplace_6 {
         initialize_token_listing<CoinType>(token_seller);
         let swap = TokenCoinSwap<CoinType> {
             token_amount,
-            price_per_token: price_per_token
+            price_per_token,
         };
         let listing = &mut borrow_global_mut<TokenListings<CoinType>>(signer::address_of(token_seller)).listings;
         assert!(!table::contains(listing, token_id), error::already_exists(ETOKEN_ALREADY_LISTED));
@@ -339,7 +339,7 @@ module MarketAddress::marketplace_6 {
             remaining * token::get_royalty_numerator(&royalty) / token::get_royalty_denominator(&royalty)
         };
 
-        // deposit to the original creators        
+        // deposit to the original creators
         let royalty_payee = token::get_royalty_payee(&royalty);
         let coin = coin::withdraw<CoinType>(token_buyer, royalty_fee);
         coin::deposit(royalty_payee, coin);
@@ -366,7 +366,7 @@ module MarketAddress::marketplace_6 {
             &mut market.sale_completed_events,
             SaleCompletedEvent {
                 token_id,
-                token_seller: token_seller,
+                token_seller,
                 token_buyer: token_buyer_address,
                 amount: token_amount,
                 coin_amount: total_cost,
@@ -461,7 +461,7 @@ module MarketAddress::marketplace_6 {
         withdraw_token_from_escrow_internal(signer::address_of(token_seller), token_id, amount)
     }
 
-    #[test(dev = @MarketAddress, receiver = @0xCAFE, aptos_framework = @aptos_framework)]
+    #[test(dev = @MarketAddress, receiver = @0xCAFE)]
     public entry fun test_initialize_and_config_market(
         dev: &signer,
         receiver: &signer,
@@ -532,7 +532,7 @@ module MarketAddress::marketplace_6 {
             0
         );
     }
-    
+
     #[test(dev = @MarketAddress, receiver = @0xCAFE, token_seller = @0xAB, token_buyer = @0x1, aptos_framework = @aptos_framework)]
     public entry fun test_make_order_and_relist(
         dev: &signer,
