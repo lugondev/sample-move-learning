@@ -1,0 +1,12 @@
+[package]
+name = "CreatorCoin04"
+version = "0.0.2"
+
+[dependencies]
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework/", rev = "83641d3f083762f31700060e5e95fbb1cbc28bf0" }
+
+[addresses]
+CreatorToken = "_"
+
+[dev-addresses]
+CreatorToken = "0xC0FFEE"

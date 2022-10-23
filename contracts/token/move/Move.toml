@@ -4,7 +4,11 @@ version = "0.0.1"
 
 [addresses]
 LugonSample = "_"
-Std =  "0x1"
+Std = "0x1"
+
+[dev-addresses]
+LugonSample = "0x1112"
 
 [dependencies]
 AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework/", rev = "main" }
+NewCoin = { local = "../new_coin" }
