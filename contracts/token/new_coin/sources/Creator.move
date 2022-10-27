@@ -1,11 +1,13 @@
-module CreatorToken::token04 {
-    use std::option::{Self, Option};
+module CreatorToken::token05 {
     use std::signer::address_of;
     use std::string;
 
     use aptos_std::type_info;
-    use aptos_framework::coin::{Self, MintCapability, BurnCapability, FreezeCapability};
+    use aptos_framework::coin;
+    use aptos_framework::managed_coin;
 
+    #[test_only]
+    use aptos_std::debug;
     #[test_only]
     use aptos_framework::account::create_account_for_test;
 
@@ -16,45 +18,43 @@ module CreatorToken::token04 {
     const ECOIN_INFO_ADDRESS_MISMATCH: u64 = 3;
     const ECOIN_STORE_ALREADY_PUBLISHED: u64 = 4;
 
-    const MONITOR_SUPPLY: bool = true;
+    const MONITOR_SUPPLY: bool = false;
 
     struct LUS has key {}
 
-    struct LUG has key {}
+    // struct Capabilities<phantom CoinType> has key {
+    //     burn_cap: BurnCapability<CoinType>,
+    //     freeze_cap: FreezeCapability<CoinType>,
+    //     mint_cap: MintCapability<CoinType>,
+    // }
 
-    struct Capabilities<phantom CoinType> has key {
-        burn_cap: Option<BurnCapability<CoinType>>,
-        freeze_cap: Option<FreezeCapability<CoinType>>,
-        mint_cap: Option<MintCapability<CoinType>>,
-    }
-
-    public entry fun create<CoinType>(
+    public entry fun create< CoinType>(
         source: &signer,
         name: string::String,
         symbol: string::String,
         decimals: u8,
         max_supply: u64
     ) {
-        assert!(!exists<Capabilities<CoinType>>(address_of(source)), ECOIN_EXISTS);
-
-        let (cap_burn, cap_freeze, cap_mint) = coin::initialize<CoinType>(
+        managed_coin::initialize<CoinType>(
             source,
-            name,
-            symbol,
+            *string::bytes(&name),
+            *string::bytes(&symbol),
             decimals,
             MONITOR_SUPPLY
         );
+        managed_coin::mint<CoinType>(source, address_of(source), max_supply);
 
-        coin::register<CoinType>(source);
-        let minted = coin::mint<CoinType>(max_supply, &cap_mint);
+        // let minted = coin::mint<CoinType>(max_supply, &cap_mint);
+        // if (!is_account_registered<CoinType>(address_of(source))) {
+        //     coin::register<CoinType>(source);
+        // };
+        // coin::deposit(address_of(source), minted);
 
-        coin::deposit(address_of(source), minted);
-
-        move_to(source, Capabilities<CoinType> {
-            burn_cap: option::some(cap_burn),
-            freeze_cap: option::some(cap_freeze),
-            mint_cap: option::some(cap_mint),
-        });
+        // move_to(source, Capabilities<CoinType> {
+        //     burn_cap: cap_burn,
+        //     freeze_cap: cap_freeze,
+        //     mint_cap: cap_mint,
+        // });
     }
 
     fun coin_address<CoinType>(): address {
@@ -62,30 +62,30 @@ module CreatorToken::token04 {
         type_info::account_address(&type_info)
     }
 
-    public entry fun register<CoinType>(account: &signer) {
-        coin::register<CoinType>(account);
+    public fun register<CoinType>(account: &signer) {
+        let account_addr = address_of(account);
+        if (!coin::is_account_registered<CoinType>(account_addr)) {
+            coin::register<CoinType>(account);
+        };
     }
 
     #[test]
     fun mint_new_tokens() {
         let root = create_account_for_test(@0xC0FFEE);
-        let user = create_account_for_test(@0x123456);
 
+        coin::register<LUS>(&root);
         create<LUS>(&root, string::utf8(b"LugonSample"), string::utf8(b"LUS"), 8, 100000000000000000);
+        let user = create_account_for_test(@0x123456);
         coin::register<LUS>(&user);
         assert!(coin::balance<LUS>(address_of(&root)) == 100000000000000000, UT_ERR);
         assert!(coin::balance<LUS>(address_of(&user)) == 0, UT_ERR);
         coin::transfer<LUS>(&root, address_of(&user), 100 ^ 8);
-        assert!(coin::balance<LUS>(address_of(&user)) == 100 ^ 8, UT_ERR);
+        let balanceOfUser = coin::balance<LUS>(address_of(&user));
+        assert!(balanceOfUser == 100 ^ 8, UT_ERR);
 
-        // register<LUS>(&user);
-        // create<LUS>(&user, string::utf8(b"LugonSample"), string::utf8(b"LUG"), 8, 100000000000000000);
-        // coin::register<LUS>(&user);
-        // coin::transfer<LUS>(&user, address_of(&root), 100 ^ 8);
-        // assert!(coin::balance<LUS>(address_of(&user)) == 0, UT_ERR);
-        //
-        // create<LUG>(&user, string::utf8(b"LugonSample"), string::utf8(b"LUG"), 8, 100000000000000000);
-        // coin::register<LUG>(&user);
-        // assert!(coin::balance<LUG>(address_of(&user)) == 0, UT_ERR);
+        debug::print(&balanceOfUser);
+
+        managed_coin::burn<LUS>(&root, 100);
+        managed_coin::mint<LUS>(&root, address_of(&root), 100000000000000000);
     }
 }

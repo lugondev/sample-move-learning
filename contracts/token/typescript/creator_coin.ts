@@ -3,6 +3,7 @@
 import { FAUCET_URL, NODE_URL, PRIVATE_KEY_ALICE, PRIVATE_KEY_BOB } from "./common";
 import { AptosAccount, AptosClient, HexString } from "aptos";
 
+const MODULE_NAME = "token05"
 
 class CoinClient extends AptosClient {
     constructor() {
@@ -11,8 +12,8 @@ class CoinClient extends AptosClient {
 
     async createCoin(module: AptosAccount, owner: AptosAccount, name: string, symbol: string, supply: number | bigint): Promise<string> {
         const rawTxn = await this.generateTransaction(owner.address(), {
-            function: `${module.address()}::token04::create`,
-            type_arguments: [ `${owner.address()}::token04::LUG` ],
+            function: `${module.address()}::${MODULE_NAME}::create`,
+            type_arguments: [ `${owner.address()}::${MODULE_NAME}::LUS` ],
             arguments: [ name, symbol, 8, supply ],
         });
 
@@ -39,9 +40,9 @@ async function main() {
     await client.waitForTransaction(txnHash, { checkSuccess: true });
     console.log("done alice:", txnHash)
 
-    txnHash = await client.createCoin(alice, bob, "TokenName01", "TN01", 10 * 10 ** 8);
-    await client.waitForTransaction(txnHash, { checkSuccess: true });
-    console.log("done bob:", txnHash)
+    // txnHash = await client.createCoin(alice, bob, "TokenName01", "TN01", 10 * 10 ** 8);
+    // await client.waitForTransaction(txnHash, { checkSuccess: true });
+    // console.log("done bob:", txnHash)
 
 }
 

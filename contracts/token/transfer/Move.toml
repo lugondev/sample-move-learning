@@ -1,0 +1,12 @@
+[package]
+name = "TransferSample01"
+version = "0.0.1"
+
+[addresses]
+TransferSample = "_"
+
+[dev-addresses]
+TransferSample = "0x1112"
+
+[dependencies]
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework/", rev = "main" }

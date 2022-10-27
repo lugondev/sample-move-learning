@@ -18,6 +18,20 @@ module CreatorToken::BasicCoin {
         coin: Coin<CoinType>
     }
 
+    // /// Information about a specific coin type. Stored on the creator of the coin's account.
+    // struct CoinInfo<phantom CoinType> has key {
+    //     name: string::String,
+    //     /// Symbol of the coin, usually a shorter version of the name.
+    //     /// For example, Singapore Dollar is SGD.
+    //     symbol: string::String,
+    //     /// Number of decimals used to get its user representation.
+    //     /// For example, if `decimals` equals `2`, a balance of `505` coins should
+    //     /// be displayed to a user as `5.05` (`505 / 10 ** 2`).
+    //     decimals: u8,
+    //     /// Amount of supply coin.
+    //     supply: u128,
+    // }
+
     public fun publish_balance<CoinType>(account: &signer) {
         let empty_coin = Coin<CoinType> { value: 0 };
         assert!(!exists<Balance<CoinType>>(signer::address_of(account)), error::already_exists(EALREADY_HAS_BALANCE));
