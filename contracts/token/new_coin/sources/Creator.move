@@ -42,12 +42,14 @@ module CreatorToken::token05 {
             decimals,
             MONITOR_SUPPLY
         );
-        managed_coin::mint<CoinType>(source, address_of(source), max_supply);
 
-        // let minted = coin::mint<CoinType>(max_supply, &cap_mint);
-        // if (!is_account_registered<CoinType>(address_of(source))) {
-        //     coin::register<CoinType>(source);
-        // };
+        coin::initialize<>()
+
+        if (!coin::is_account_registered<CoinType>(address_of(source))) {
+            coin::register<CoinType>(source);
+        };
+
+        managed_coin::mint<CoinType>(source, address_of(source), max_supply);
         // coin::deposit(address_of(source), minted);
 
         // move_to(source, Capabilities<CoinType> {

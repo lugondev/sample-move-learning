@@ -13,7 +13,7 @@ class CoinClient extends AptosClient {
     async createCoin(module: AptosAccount, owner: AptosAccount, name: string, symbol: string, supply: number | bigint): Promise<string> {
         const rawTxn = await this.generateTransaction(owner.address(), {
             function: `${module.address()}::${MODULE_NAME}::create`,
-            type_arguments: [ `${owner.address()}::${MODULE_NAME}::LUS` ],
+            type_arguments: [ `${owner.address()}::CustomCoin::MyCoin` ],
             arguments: [ name, symbol, 8, supply ],
         });
 
@@ -36,7 +36,7 @@ async function main() {
     console.log(`Bob: ${bob.address()}`);
 
     let txnHash
-    txnHash = await client.createCoin(alice, alice, "TokenName01", "TN01", 10 * 10 ** 8);
+    txnHash = await client.createCoin(alice, bob, "TokenName01", "TN01", 10 * 10 ** 8);
     await client.waitForTransaction(txnHash, { checkSuccess: true });
     console.log("done alice:", txnHash)
 
